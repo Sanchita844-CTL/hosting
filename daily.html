@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Report</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="main-content">
+    <h1>Daily Report (Last Hour)</h1>
+    <a href="dashboard.html" class="back-btn">&#8592; Back to Dashboard</a>
+
+    <!-- Table -->
+    <div class="table-container">
+      <table id="dailyTable">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Temperature (°C)</th>
+            <th>IR Sensor</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-container">
+      <canvas id="dailyChart"></canvas>
+    </div>
+  </div>
+
+  <script src="daily.js"></script>
+</body>
+</html>
