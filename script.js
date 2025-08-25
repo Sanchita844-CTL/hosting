@@ -1,5 +1,4 @@
 window.addEventListener('DOMContentLoaded', () => {
-  // Firebase config
   const firebaseConfig = {
     databaseURL: "https://tempval-6f873-default-rtdb.asia-southeast1.firebasedatabase.app/"
   };
@@ -8,15 +7,14 @@ window.addEventListener('DOMContentLoaded', () => {
   const ref = db.ref("sensor_data");
 
   // Elements
-  const startBtn = document.getElementById("startBtn");
-  const dashboardSection = document.getElementById("dashboardSection");
-  const cardsSection = document.getElementById("cardsSection");
-  const alarm = document.getElementById("alarmSound");
   const tableBody = document.querySelector("#sensorTable tbody");
-  const tempCard = document.getElementById("tempCard");
-  const irCard = document.getElementById("irCard");
   const tempEl = document.getElementById("temp");
   const irEl = document.getElementById("ir");
+  const tempCard = document.getElementById("tempCard");
+  const irCard = document.getElementById("irCard");
+  const alarm = document.getElementById("alarmSound");
+
+  const TEMP_ALERT_THRESHOLD = 25.0;
 
   // Chart setup
   const ctx = document.getElementById('combinedChart').getContext('2d');
@@ -42,81 +40,49 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  const TEMP_ALERT_THRESHOLD = 160.0;
-  if (Notification.permission !== "granted") Notification.requestPermission();
+  // Firebase listener
+  ref.limitToLast(20).on('child_added', snapshot => {
+    const data = snapshot.val();
+    if (!data) return;
 
-  startBtn.addEventListener("click", () => {
-    dashboardSection.style.display = "flex";
-    cardsSection.style.display = "flex";
-    startBtn.style.display = "none";
+    const tempVal = Number(data.temperature);
+    const irVal = Number(data.ir);
+    const timeLabel = data.timestamp.split(" ")[1];
 
-    // Unlock alarm
-    alarm.loop = true;
-    alarm.volume = 1;
-    alarm.load();
-    alarm.play().then(() => { alarm.pause(); alarm.currentTime = 0; }).catch(e => console.log("Audio unlock failed:", e));
+    // Update cards
+    tempEl.textContent = tempVal.toFixed(1);
+    irEl.textContent = irVal;
+    tempCard.classList.toggle("alert", tempVal > TEMP_ALERT_THRESHOLD);
+    irCard.classList.toggle("alert", irVal !== 1 && irVal !== 0);
 
-    startFirebaseListener();
+    // Alarm
+    if (tempVal > TEMP_ALERT_THRESHOLD) alarm.play().catch(() => {});
+    else { alarm.pause(); alarm.currentTime = 0; }
+
+    // Update table
+    const row = document.createElement("tr");
+    if (tempVal > TEMP_ALERT_THRESHOLD) row.classList.add("alert");
+    row.innerHTML = `<td>${timeLabel}</td><td>${tempVal.toFixed(1)}</td><td>${irVal}</td>`;
+    tableBody.appendChild(row);
+    if (tableBody.rows.length > 20) tableBody.deleteRow(0);
+
+    // Update chart
+    combinedChart.data.labels.push(timeLabel);
+    combinedChart.data.datasets[0].data.push(tempVal);
+    combinedChart.data.datasets[1].data.push(irVal);
+    if (combinedChart.data.labels.length > 20) {
+      combinedChart.data.labels.shift();
+      combinedChart.data.datasets[0].data.shift();
+      combinedChart.data.datasets[1].data.shift();
+    }
+    combinedChart.update();
   });
-
-  // Firebase listener every 5 sec
-  function startFirebaseListener() {
-    setInterval(async () => {
-      const snapshot = await ref.limitToLast(1).get();
-      const latest = snapshot.val();
-      if (!latest) return;
-
-      const key = Object.keys(latest)[0];
-      const data = latest[key];
-
-      const tempVal = Number(data.temperature);
-      const irVal = Number(data.ir);
-      const timeLabel = data.timestamp.split(" ")[1];
-
-      // Update cards
-      tempEl.textContent = tempVal.toFixed(1);
-      irEl.textContent = irVal;
-      tempCard.classList.toggle("alert", tempVal > TEMP_ALERT_THRESHOLD);
-      irCard.classList.toggle("alert", irVal !== 1 && irVal !== 0);
-
-      // Alarm
-      if (tempVal > TEMP_ALERT_THRESHOLD) alarm.play().catch(e => console.log("Alarm blocked"));
-      else { alarm.pause(); alarm.currentTime = 0; }
-
-      // Update table
-      const row = document.createElement("tr");
-      if (tempVal > TEMP_ALERT_THRESHOLD) row.classList.add("alert");
-      row.innerHTML = `<td>${timeLabel}</td><td>${tempVal.toFixed(1)}</td><td>${irVal}</td>`;
-      tableBody.appendChild(row);
-      if (tableBody.rows.length > 20) tableBody.deleteRow(0);
-
-      // Update chart
-      combinedChart.data.labels.push(timeLabel);
-      combinedChart.data.datasets[0].data.push(tempVal);
-      combinedChart.data.datasets[1].data.push(irVal);
-      if (combinedChart.data.labels.length > 20) {
-        combinedChart.data.labels.shift();
-        combinedChart.data.datasets[0].data.shift();
-        combinedChart.data.datasets[1].data.shift();
-      }
-      combinedChart.update();
-    }, 5000);
-  }
 });
 
-
-// Sidebar toggle
-const menuBtn = document.getElementById('menuBtn');
+// ===== Sidebar toggle =====
 const sidebar = document.getElementById('sidebar');
-const closeSidebar = document.getElementById('closeSidebar');
-const mainContent = document.querySelector('.main-content');
+const toggleBtn = document.getElementById('sidebarToggle');
 
-menuBtn.addEventListener('click', () => {
-  sidebar.classList.add('active');
-  mainContent.classList.add('shifted');
-});
-
-closeSidebar.addEventListener('click', () => {
-  sidebar.classList.remove('active');
-  mainContent.classList.remove('shifted');
+toggleBtn.addEventListener('click', () => {
+  sidebar.classList.toggle('active');
 });

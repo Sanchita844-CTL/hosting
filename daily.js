@@ -1,5 +1,4 @@
 window.addEventListener('DOMContentLoaded', () => {
-  // ===== Firebase configuration =====
   const firebaseConfig = {
     databaseURL: "https://tempval-6f873-default-rtdb.asia-southeast1.firebasedatabase.app/"
   };
@@ -36,33 +35,66 @@ window.addEventListener('DOMContentLoaded', () => {
       maintainAspectRatio: false,
       scales: {
         y: { beginAtZero: false },
-        y1: { beginAtZero: true },
         x: { title: { display: true, text: 'Time' } }
       }
     }
   });
 
-  // ===== Fetch last hour data =====
-  ref.limitToLast(60).get().then(snapshot => {
-    const dataObj = snapshot.val();
-    if (!dataObj) return;
+  function fetchDailyData() {
+    ref.get().then(snapshot => {
+      const dataObj = snapshot.val();
+      if (!dataObj) return;
 
-    Object.values(dataObj).forEach(data => {
-      const timeLabel = data.timestamp.split(" ")[1];
-      const temp = Number(data.temperature);
-      const ir = Number(data.ir);
+      tableBody.innerHTML = '';
+      dailyChart.data.labels = [];
+      dailyChart.data.datasets[0].data = [];
+      dailyChart.data.datasets[1].data = [];
 
-      // Table
-      const row = document.createElement("tr");
-      row.innerHTML = `<td>${timeLabel}</td><td>${temp.toFixed(1)}</td><td>${ir}</td>`;
-      tableBody.appendChild(row);
+      const now = new Date();
+      // Start of today (00:00:00)
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-      // Chart
-      dailyChart.data.labels.push(timeLabel);
-      dailyChart.data.datasets[0].data.push(temp);
-      dailyChart.data.datasets[1].data.push(ir);
+
+      let dataArray = Object.values(dataObj)
+      .filter(d => new Date(d.timestamp) >= startOfToday)
+      .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+
+      // Take one reading every 30 minutes
+      let intervalData = [];
+      let lastAddedTime = 0;
+      dataArray.forEach(d => {
+        let time = new Date(d.timestamp).getTime();
+        if (time - lastAddedTime >= 30 * 60 * 1000 || lastAddedTime === 0) {
+          intervalData.push(d);
+          lastAddedTime = time;
+        }
+      });
+
+      intervalData.forEach(d => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${d.timestamp}</td>
+                         <td>${Number(d.temperature).toFixed(1)}</td>
+                         <td>${Number(d.ir)}</td>`;
+        tableBody.appendChild(row);
+
+        dailyChart.data.labels.push(d.timestamp);
+        dailyChart.data.datasets[0].data.push(Number(d.temperature));
+        dailyChart.data.datasets[1].data.push(Number(d.ir));
+      });
+
+      dailyChart.update();
     });
+  }
 
-    dailyChart.update();
-  });
+  fetchDailyData();
+  setInterval(fetchDailyData, 300000); // refresh every 5 min
+});
+
+// ===== Sidebar toggle =====
+const sidebar = document.getElementById('sidebar');
+const toggleBtn = document.getElementById('sidebarToggle');
+
+toggleBtn.addEventListener('click', () => {
+  sidebar.classList.toggle('active');
 });

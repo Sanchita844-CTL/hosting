@@ -11,22 +11,27 @@
 </head>
 <body>
 
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <h2>Menu</h2>
-    <ul>
-      <li><a href="#" id="profile">Profile</a></li>
-      <li><a href="#" id="back">Back</a></li>
-      <li><a href="daily.html">Daily Report</a></li>
-      <li><a href="#" id="monthlyReport">Monthly Report</a></li>
-    </ul>
-  </div>
+
+
+  <!-- Three-dot toggle button -->
+<div id="sidebarToggle">⋮</div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+  <ul>
+    <br>
+    <br>
+    <li><a href="#">Profile</a></li>
+    <li><a href="daily.html">Daily Report</a></li>
+    <li><a href="monthly.html">Monthly Report</a></li>
+  </ul>
+</div>
+
 
   <!-- Main content -->
   <div class="main-content">
-    <button id="startBtn">Start Dashboard</button>
 
-    <section class="cards" style="display:none;" id="cardsSection">
+    <section class="cards" id="cardsSection">
       <div class="card" id="tempCard">
         <h2>Temperature (°C)</h2>
         <p id="temp">--</p>
@@ -37,7 +42,7 @@
       </div>
     </section>
 
-    <section class="dashboard" style="display:none;" id="dashboardSection">
+    <section class="dashboard" id="dashboardSection">
       <div class="table-container">
         <table id="sensorTable">
           <thead>
