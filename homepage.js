@@ -1,27 +1,48 @@
 document.addEventListener('DOMContentLoaded', function() {
-  // Password toggle functionality
+  // Password toggle
   const togglePassword = document.querySelector('.toggle-password');
-  const password = document.getElementById('password');
-  
+  const passwordInput = document.getElementById('password');
+
   togglePassword.addEventListener('click', function() {
-    // Toggle the type attribute
-    const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-    password.setAttribute('type', type);
-    
-    // Toggle the eye icon
+    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordInput.setAttribute('type', type);
     this.classList.toggle('fa-eye-slash');
     this.classList.toggle('fa-eye');
   });
 
-  // Existing login button functionality
-  document.getElementById('loginBtn').addEventListener('click', function() {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    
-    if (email && password) {
-      window.location.href = 'dashboard.html';
-    } else {
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyCWBjXWzeZp--SSZwYjhRY8eTBf1E2qdo0",
+    authDomain: "login-b0146.firebaseapp.com",
+    projectId: "login-b0146",
+    storageBucket: "login-b0146.firebasestorage.app",
+    messagingSenderId: "238001252324",
+    appId: "1:238001252324:web:61a2ed15d313875fcf89f1",
+    measurementId: "G-0DK7BWBQRK"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  // Login button functionality
+  document.querySelector('.login-btn').addEventListener('click', function() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if (!email || !password) {
       alert('Please enter both email and password');
+      return;
     }
+
+    // Attempt Firebase authentication
+    auth.signInWithEmailAndPassword(email, password)
+      .then(userCredential => {
+        // Only redirect if login succeeds
+        alert(`Welcome, ${userCredential.user.displayName || 'User'}!`);
+        window.location.href = 'dashboard.html';
+      })
+      .catch(error => {
+        // Do NOT redirect, show error
+        alert(`Login failed: ${error.message}`);
+      });
   });
 });

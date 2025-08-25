@@ -14,7 +14,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const irCard = document.getElementById("irCard");
   const alarm = document.getElementById("alarmSound");
 
-  const TEMP_ALERT_THRESHOLD = 25.0;
+  const TEMP_ALERT_THRESHOLD = 150.0;
 
   // Chart setup
   const ctx = document.getElementById('combinedChart').getContext('2d');

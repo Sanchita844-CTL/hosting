@@ -21,12 +21,6 @@ body {
   width: 100%;
 }
 
-.logo {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-}
-
 .logo img {
   width: 60px;
   height: 60px;
@@ -119,3 +113,20 @@ input {
   color: #333;
 }
 
+.logo {
+  display: flex;
+  align-items: center; /* vertically center the text with the logo */
+  gap: 10px; /* space between logo and text */
+}
+
+.logo img {
+  width: 50px; /* adjust size as needed */
+  height: auto;
+}
+
+.logo-title {
+  font-family: 'Roboto', sans-serif;
+  font-size: 1.5rem; /* adjust size */
+  font-weight: 700;
+  color: #ffffff; /* change color if needed */
+}
